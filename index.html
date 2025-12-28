@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>专属隐私空间 - 19.9元终身会员</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .vip-popup { animation: fadeIn 0.5s ease-out; }
+        .qrcode-popup { animation: fadeIn 0.3s ease-out; }
+        .btn-pulse { animation: pulse 1.5s infinite; }
+        .content-card { transition: transform 0.3s ease; }
+        .content-card:hover { transform: translateY(-4px); }
+        .bg-gradient-purple { background: linear-gradient(135deg, #9d23d6 0%, #6a11cb 100%); }
+        .bg-mosaic {
+            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23333333' fill-opacity='0.4' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .tab-item { cursor: pointer; position: relative; flex-shrink: 0; }
+        .tab-item.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: #9d23d6; }
+        .content-panel { display: none; }
+        .content-panel.active { display: block; animation: fadeIn 0.3s ease-out; }
+        .detail-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 100; padding: 15px; overflow-y: auto; display: none; }
+        .detail-modal.active { display: block; animation: fadeIn 0.3s ease-out; }
+        /* 二维码弹窗样式 */
+        .qrcode-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 60; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .qrcode-modal.active { display: flex; }
+        .qrcode-card { background: white; border-radius: 12px; padding: 20px; max-width: 350px; width: 100%; }
+        .qrcode-img { width: 100%; height: auto; border-radius: 8px; }
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-black text-white m-0 p-0 font-sans">
+    <!-- 会员开通弹窗 -->
+    <div id="vipPopup" class="vip-popup fixed inset-0 z-50 flex flex-col items-center justify-center px-4 bg-mosaic">
+        <button class="absolute top-4 left-4 text-white text-2xl hover:text-gray-300" id="closeBtn">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="relative w-full max-w-md z-10">
+            <h2 class="text-[clamp(1.5rem,6vw,2.5rem)] font-bold text-center mb-6 text-yellow-300">您专属隐私空间</h2>
+            <div class="flex flex-col gap-4 mb-8 px-3">
+                <div class="flex items-center gap-3">
+                    <span class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-xs"><i class="fa-solid fa-lock"></i></span>
+                    <span class="text-base">隐私空间 无限制导入</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-xs"><i class="fa-solid fa-film"></i></span>
+                    <span class="text-base">高清原画 极速播放</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-xs"><i class="fa-solid fa-key"></i></span>
+                    <span class="text-base">密码设置 保护隐私</span>
+                </div>
+            </div>
+            <div class="px-3 mb-8">
+                <div class="bg-purple-900/80 border-2 border-purple-500 rounded-2xl p-5 relative">
+                    <div class="absolute -top-3 left-4 bg-pink-600 text-xs px-2 py-1 rounded-full">限时特价，90%人选择</div>
+                    <h3 class="text-lg font-bold mt-2 mb-3">终身会员</h3>
+                    <div class="flex items-baseline gap-4 mb-4">
+                        <p class="text-4xl font-bold text-white">¥19.9</p>
+                        <p class="text-xs text-gray-300">永久解锁所有功能</p>
+                    </div>
+                    <p class="text-gray-400 text-xs mb-2">平均每天仅需0.05元</p>
+                </div>
+            </div>
+            <div class="px-3 mb-6" id="payArea">
+                <p class="text-center text-purple-400 mb-3 text-sm">选择支付方式，扫码支付后输入金额验证</p>
+                <!-- 支付宝支付按钮 -->
+                <button class="w-full bg-blue-600 rounded-xl py-3 text-base font-bold mb-3 flex items-center justify-center gap-2" id="alipayBtn">
+                    <i class="fa-brands fa-alipay text-xl"></i>支付宝支付19.9元
+                </button>
+                <!-- 微信支付按钮 -->
+                <button class="w-full bg-green-600 rounded-xl py-3 text-base font-bold mb-4 flex items-center justify-center gap-2" id="wechatPayBtn">
+                    <i class="fa-brands fa-weixin text-xl"></i>微信支付19.9元
+                </button>
+                <input type="number" step="0.01" placeholder="请输入支付金额" id="payAmount" class="w-full bg-gray-800 border border-purple-500 rounded-lg py-3 px-4 text-center text-base">
+                <p id="tipText" class="text-red-400 text-center mt-3 text-xs hidden"></p>
+                <button class="w-full bg-gradient-purple rounded-xl py-3 text-base font-bold mt-4 btn-pulse" id="verifyBtn">验证支付并进入</button>
+            </div>
+            <p class="text-center text-gray-400 text-xs mt-4">会员付费协议</p>
+            <div class="text-xs text-gray-500 mt-2 px-3">
+                <p>会员特权：</p>
+                <p>• 提供专属私密影视空间、私密照片空间；</p>
+                <p>• 播放器设置解锁密码功能；</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 支付宝二维码弹窗 -->
+    <div class="qrcode-modal" id="alipayQrcodeModal">
+        <div class="qrcode-card">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-blue-600">支付宝支付</h3>
+                <button class="text-gray-500 text-xl" id="closeAlipayQrcode">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-center text-gray-600 mb-3">扫码支付19.9元</p>
+            <img src="https://picsum.photos/300/300?random=50" alt="支付宝收款码" class="qrcode-img">
+            <p class="text-center text-gray-500 text-xs mt-3">支付完成后请返回输入金额验证</p>
+        </div>
+    </div>
+
+    <!-- 微信二维码弹窗 -->
+    <div class="qrcode-modal" id="wechatQrcodeModal">
+        <div class="qrcode-card">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-green-600">微信支付</h3>
+                <button class="text-gray-500 text-xl" id="closeWechatQrcode">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-center text-gray-600 mb-3">扫码支付19.9元</p>
+            <img src="https://picsum.photos/300/300?random=51" alt="微信收款码" class="qrcode-img">
+            <p class="text-center text-gray-500 text-xs mt-3">支付完成后请返回输入金额验证</p>
+        </div>
+    </div>
+
+    <!-- 主内容界面 -->
+    <div id="mainContent" class="hidden min-h-screen bg-gray-900">
+        <!-- 顶部搜索栏 -->
+        <div class="sticky top-0 bg-gray-900/95 backdrop-blur-sm z-40 border-b border-gray-800 px-3 py-2">
+            <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                    <input type="text" placeholder="搜索内容" class="w-full bg-gray-800 rounded-lg py-2 px-3 pl-8 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500">
+                    <i class="fa-solid fa-search absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                </div>
+                <button class="bg-gray-800 rounded-lg px-2 py-2 text-xs flex items-center gap-1">
+                    <span>筛选</span><i class="fa-solid fa-filter text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 板块标签栏 -->
+        <div class="sticky top-12 bg-gray-900/95 backdrop-blur-sm z-30 border-b border-gray-800 px-3 py-2 overflow-x-auto">
+            <div class="flex gap-5 whitespace-nowrap">
+                <div class="tab-item active py-2 text-base font-medium text-white" data-tab="military">军事</div>
+                <div class="tab-item py-2 text-base font-medium text-gray-400" data-tab="movie">影视</div>
+                <div class="tab-item py-2 text-base font-medium text-gray-400" data-tab="novel">小说</div>
+                <div class="tab-item py-2 text-base font-medium text-gray-400" data-tab="photo">照片</div>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="px-3 py-4">
+            <!-- 军事板块 -->
+            <div class="content-panel active" id="military">
+                <div class="rounded-xl overflow-hidden mb-4 relative">
+                    <img src="https://picsum.photos/750/300?random=1" alt="军事推荐" class="w-full h-auto">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                        <h3 class="text-lg font-bold mb-1">2025国际军事演习全景解析</h3>
+                        <p class="text-gray-300 text-xs">美俄中三国装备同台亮相，实力对比一目了然</p>
+                    </div>
+                </div>
+                <div class="flex gap-2 mb-4 overflow-x-auto">
+                    <button class="bg-purple-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">推荐</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">武器解析</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">国际局势</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">军演动态</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">国防科技</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="military1">
+                        <img src="https://picsum.photos/300/200?random=10" alt="航母" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">福建舰第5次海试细节</h4>
+                            <p class="text-xs text-gray-400">热度3.2万</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="military2">
+                        <img src="https://picsum.photos/300/200?random=11" alt="坦克" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">VT-5B坦克实战测试</h4>
+                            <p class="text-xs text-gray-400">热度2.8万</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="military3">
+                        <img src="https://picsum.photos/300/200?random=12" alt="战机" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">歼-36隐身战机列装</h4>
+                            <p class="text-xs text-gray-400">热度4.5万</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="military4">
+                        <img src="https://picsum.photos/300/200?random=13" alt="导弹" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">东风-41部署动态</h4>
+                            <p class="text-xs text-gray-400">热度3.9万</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="military5">
+                        <img src="https://picsum.photos/300/200?random=14" alt="潜艇" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">096核潜艇最新消息</h4>
+                            <p class="text-xs text-gray-400">热度3.6万</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="military6">
+                        <img src="https://picsum.photos/300/200?random=15" alt="军演" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">中俄联合军演实况</h4>
+                            <p class="text-xs text-gray-400">热度2.7万</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 影视板块 -->
+            <div class="content-panel" id="movie">
+                <div class="rounded-xl overflow-hidden mb-4 relative">
+                    <img src="https://picsum.photos/750/300?random=2" alt="影视推荐" class="w-full h-auto">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                        <h3 class="text-lg font-bold mb-1">2026必看影视合集</h3>
+                        <p class="text-gray-300 text-xs">流浪地球3、狂飙2等重磅作品来袭</p>
+                    </div>
+                </div>
+                <div class="flex gap-2 mb-4 overflow-x-auto">
+                    <button class="bg-purple-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">推荐</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">电影</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">电视剧</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">综艺</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">动漫</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="movie1">
+                        <img src="https://picsum.photos/300/200?random=20" alt="流浪地球3" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">流浪地球3</h4>
+                            <p class="text-xs text-gray-400">评分9.2 | 科幻</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="movie2">
+                        <img src="https://picsum.photos/300/200?random=21" alt="狂飙2" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">狂飙2</h4>
+                            <p class="text-xs text-gray-400">评分8.9 | 犯罪</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="movie3">
+                        <img src="https://picsum.photos/300/200?random=22" alt="满江红2" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">满江红2</h4>
+                            <p class="text-xs text-gray-400">评分8.5 | 古装</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="movie4">
+                        <img src="https://picsum.photos/300/200?random=23" alt="奔跑吧9" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">奔跑吧9</h4>
+                            <p class="text-xs text-gray-400">评分7.8 | 综艺</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="movie5">
+                        <img src="https://picsum.photos/300/200?random=24" alt="三体" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">三体2：黑暗森林</h4>
+                            <p class="text-xs text-gray-400">评分9.5 | 科幻</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="movie6">
+                        <img src="https://picsum.photos/300/200?random=25" alt="火影新篇" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">火影忍者新篇</h4>
+                            <p class="text-xs text-gray-400">评分8.7 | 动漫</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 小说板块 -->
+            <div class="content-panel" id="novel">
+                <div class="rounded-xl overflow-hidden mb-4 relative">
+                    <img src="https://picsum.photos/750/300?random=3" alt="小说推荐" class="w-full h-auto">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                        <h3 class="text-lg font-bold mb-1">2025网文爆款合集</h3>
+                        <p class="text-gray-300 text-xs">剑来、诡秘之主等经典作品持续更新</p>
+                    </div>
+                </div>
+                <div class="flex gap-2 mb-4 overflow-x-auto">
+                    <button class="bg-purple-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">推荐</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">玄幻</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">仙侠</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">悬疑</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">都市</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="novel1">
+                        <img src="https://picsum.photos/300/200?random=30" alt="剑来" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">剑来</h4>
+                            <p class="text-xs text-gray-400">620万字 | 修仙</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="novel2">
+                        <img src="https://picsum.photos/300/200?random=31" alt="诡秘之主" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">诡秘之主</h4>
+                            <p class="text-xs text-gray-400">440万字 | 西幻</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="novel3">
+                        <img src="https://picsum.photos/300/200?random=32" alt="凡人修仙传" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">凡人修仙传</h4>
+                            <p class="text-xs text-gray-400">780万字 | 仙侠</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="novel4">
+                        <img src="https://picsum.photos/300/200?random=33" alt="盗墓笔记" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">盗墓笔记</h4>
+                            <p class="text-xs text-gray-400">200万字 | 悬疑</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="novel5">
+                        <img src="https://picsum.photos/300/200?random=34" alt="都市修仙" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">都市之修仙归来</h4>
+                            <p class="text-xs text-gray-400">560万字 | 都市</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="novel6">
+                        <img src="https://picsum.photos/300/200?random=35" alt="雪中悍刀行" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">雪中悍刀行2</h4>
+                            <p class="text-xs text-gray-400">480万字 | 玄幻</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 照片板块 -->
+            <div class="content-panel" id="photo">
+                <div class="rounded-xl overflow-hidden mb-4 relative">
+                    <img src="https://picsum.photos/750/300?random=4" alt="照片推荐" class="w-full h-auto">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                        <h3 class="text-lg font-bold mb-1">高清照片合集</h3>
+                        <p class="text-gray-300 text-xs">军事装备/影视明星/自然风光等高清图集</p>
+                    </div>
+                </div>
+                <div class="flex gap-2 mb-4 overflow-x-auto">
+                    <button class="bg-purple-600 text-white px-3 py-1 rounded-full text-xs flex-shrink-0">推荐</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">军事装备</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">影视明星</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">自然风光</button>
+                    <button class="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-xs flex-shrink-0">城市建筑</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="photo1">
+                        <img src="https://picsum.photos/300/300?random=40" alt="航母图" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">航母细节高清图</h4>
+                            <p class="text-xs text-gray-400">286张 | 4K</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="photo2">
+                        <img src="https://picsum.photos/300/300?random=41" alt="明星写真" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">明星写真集</h4>
+                            <p class="text-xs text-gray-400">512张 | 超清</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="photo3">
+                        <img src="https://picsum.photos/300/300?random=42" alt="小说插画" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">小说人物插画</h4>
+                            <p class="text-xs text-gray-400">328张 | 手绘</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="photo4">
+                        <img src="https://picsum.photos/300/300?random=43" alt="自然风光" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">自然风光摄影</h4>
+                            <p class="text-xs text-gray-400">456张 | 8K</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="photo5">
+                        <img src="https://picsum.photos/300/300?random=44" alt="城市建筑" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">全球城市建筑</h4>
+                            <p class="text-xs text-gray-400">386张 | 超清</p>
+                        </div>
+                    </div>
+                    <div class="content-card bg-gray-800 rounded-xl overflow-hidden" data-detail="photo6">
+                        <img src="https://picsum.photos/300/300?random=45" alt="军事武器" class="w-full h-24 object-cover">
+                        <div class="p-2">
+                            <h4 class="font-semibold text-xs mb-1">军事武器特写</h4>
+                            <p class="text-xs text-gray-400">256张 | 4K</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div class="detail-modal" id="detailModal">
+        <button class="absolute top-4 right-4 text-white text-2xl" id="closeDetail">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="max-w-md mx-auto bg-gray-800 rounded-2xl overflow-hidden">
+            <img src="" alt="详情图" class="w-full h-auto" id="detailImg">
+            <div class="p-4">
+                <h3 class="text-lg font-bold mb-2" id="detailTitle"></h3>
+                <div class="text-gray-300 text-sm space-y-2" id="detailContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素获取
+        const vipPopup = document.getElementById('vipPopup');
+        const mainContent = document.getElementById('mainContent');
+        const closeBtn = document.getElementById('closeBtn');
+        const alipayBtn = document.getElementById('alipayBtn');
+        const wechatPayBtn = document.getElementById('wechatPayBtn');
+        const payAmount = document.getElementById('payAmount');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const tipText = document.getElementById('tipText');
+        
+        // 二维码弹窗元素
+        const alipayQrcodeModal = document.getElementById('alipayQrcodeModal');
+        const wechatQrcodeModal = document.getElementById('wechatQrcodeModal');
+        const closeAlipayQrcode = document.getElementById('closeAlipayQrcode');
+        const closeWechatQrcode = document.getElementById('closeWechatQrcode');
+
+        // ========== 核心功能：会员状态持久化 ==========
+        window.onload = function() {
+            const isVip = localStorage.getItem('isVip');
+            if (isVip === 'true') {
+                vipPopup.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                mainContent.style.animation = 'fadeIn 0.8s ease-out';
+            }
+        }
+
+        // ========== 支付二维码弹窗逻辑 ==========
+        // 打开支付宝二维码
+        alipayBtn.addEventListener('click', () => {
+            alipayQrcodeModal.classList.add('active');
+        });
+
+        // 打开微信二维码
+        wechatPayBtn.addEventListener('click', () => {
+            wechatQrcodeModal.classList.add('active');
+        });
+
+        // 关闭支付宝二维码
+        closeAlipayQrcode.addEventListener('click', () => {
+            alipayQrcodeModal.classList.remove('active');
+        });
+
+        // 关闭微信二维码
+        closeWechatQrcode.addEventListener('click', () => {
+            wechatQrcodeModal.classList.remove('active');
+        });
+
+        // 点击弹窗外部关闭二维码
+        alipayQrcodeModal.addEventListener('click', (e) => {
+            if (e.target === alipayQrcodeModal) alipayQrcodeModal.classList.remove('active');
+        });
+        wechatQrcodeModal.addEventListener('click', (e) => {
+            if (e.target === wechatQrcodeModal) wechatQrcodeModal.classList.remove('active');
+        });
+
+        // ========== 支付验证+跳转主界面 ==========
+        verifyBtn.addEventListener('click', () => {
+            const inputAmount = parseFloat(payAmount.value);
+            if (isNaN(inputAmount)) {
+                tipText.textContent = '请输入有效的支付金额';
+                tipText.classList.remove('hidden', 'text-green-400');
+                tipText.classList.add('text-red-400');
+                return;
+            }
+            if (inputAmount === 19.9) {
+                // 存储会员状态到本地
+                localStorage.setItem('isVip', 'true');
+                // 隐藏付费弹窗，显示主界面
+                vipPopup.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    vipPopup.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    mainContent.style.animation = 'fadeIn 0.8s ease-out';
+                    // 关闭二维码弹窗（如果打开）
+                    alipayQrcodeModal.classList.remove('active');
+                    wechatQrcodeModal.classList.remove('active');
+                }, 500);
+            } else {
+                tipText.textContent = `支付金额错误，需支付19.9元`;
+                tipText.classList.remove('hidden', 'text-green-400');
+                tipText.classList.add('text-red-400');
+            }
+        });
+
+        // 关闭付费弹窗
+        closeBtn.addEventListener('click', () => vipPopup.classList.add('hidden'));
+
+        // ========== 标签切换逻辑 ==========
+        const tabItems = document.querySelectorAll('.tab-item');
+        const contentPanels = document.querySelectorAll('.content-panel');
+        tabItems.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabItems.forEach(item => {
+                    item.classList.remove('active', 'text-white');
+                    item.classList.add('text-gray-400');
+                });
+                tab.classList.add('active', 'text-white');
+                tab.classList.remove('text-gray-400');
+                contentPanels.forEach(panel => panel.classList.remove('active'));
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ========== 详情弹窗数据 ==========
+        const detailData = {
+            military1: { 
+                img: 'https://picsum.photos/750/400?random=10', 
+                title: '福建舰第5次海试细节曝光', 
+                content: `<p>福建舰完成电磁弹射系统测试，歼-35舰载机首次在甲板完成弹射起飞，各项性能指标达标。</p><p>据军方透露，福建舰预计2025年第三季度正式列装海军，将成为我国海军主力航母。</p><p>热度：3.2万 | 发布时间：2025-12-20</p>` 
+            },
+            military2: { 
+                img: 'https://picsum.photos/750/400?random=11', 
+                title: 'VT-5B轻型坦克实战测试', 
+                content: `<p>VT-5B轻型坦克在青藏高原完成实战化测试，可在海拔4500米环境下正常作战，主动防护系统成功拦截多枚反坦克导弹。</p><p>该坦克重量仅35吨，机动性强，适合复杂地形部署。</p><p>热度：2.8万 | 发布时间：2025-12-15</p>` 
+            },
+            military3: { 
+                img: 'https://picsum.photos/750/400?random=12', 
+                title: '歼-36隐身战机列装倒计时', 
+                content: `<p>歼-36隐身战机完成最后阶段测试，最大航程4500公里，搭载霹雳-15E空空导弹，具备超音速巡航能力。</p><p>该机采用先进的有源相控阵雷达，隐身性能优于F-35，预计2026年正式列装空军和海军航空兵。</p><p>热度：4.5万 | 发布时间：2025-12-10</p>` 
+            },
+            military4: { 
+                img: 'https://picsum.photos/750/400?random=13', 
+                title: '东风-41导弹最新部署动态', 
+                content: `<p>东风-41洲际导弹完成西北战区部署，射程覆盖全球，可携带分导式多弹头，突防能力极强。</p><p>该导弹采用公路机动发射方式，生存能力强，是我国战略核力量的重要组成部分。</p><p>热度：3.9万 | 发布时间：2025-12-05</p>` 
+            },
+            military5: { 
+                img: 'https://picsum.photos/750/400?random=14', 
+                title: '096核潜艇最新消息', 
+                content: `<p>096型战略核潜艇已完成海试，可搭载16枚巨浪-3潜射导弹，射程超过12000公里。</p><p>该潜艇采用无轴泵推技术，噪音水平极低，隐蔽性大幅提升。</p><p>热度：3.6万 | 发布时间：2025-12-01</p>` 
+            },
+            military6: { 
+                img: 'https://picsum.photos/750/400?random=15', 
+                title: '中俄联合军演实况', 
+                content: `<p>中俄"海上联合-2025"军事演习在日本海举行，双方派出30艘舰艇、50架战机参演。</p><p>演习重点演练反潜、防空、联合搜救等科目，彰显两国军事合作水平。</p><p>热度：2.7万 | 发布时间：2025-11-28</p>` 
+            },
+            movie1: { 
+                img: 'https://picsum.photos/750/400?random=20', 
+                title: '流浪地球3', 
+                content: `<p>郭帆执导的科幻冒险电影，《流浪地球》系列第三部，故事延续"带着地球去流浪"的核心设定，人类将面临更严峻的宇宙危机。</p><p>影片特效镜头占比超80%，将呈现木星爆炸、星际航行等宏大场景，预计2026年2月春节档上映。</p><p>类型：科幻/冒险 | 评分：9.2 | 主演：吴京、屈楚萧</p>` 
+            },
+            movie2: { 
+                img: 'https://picsum.photos/750/400?random=21', 
+                title: '狂飙2', 
+                content: `<p>张译、张颂文领衔主演的悬疑犯罪剧，延续第一部扫黑除恶主题，讲述新专案组深入京海市，打击新型黑恶势力的故事。</p><p>该剧首播两集收视率破3，剧情紧凑、演技在线，成为2026年开年爆款剧。</p><p>类型：悬疑/犯罪 | 评分：8.9 | 集数：38集</p>` 
+            },
+            movie3: { 
+                img: 'https://picsum.photos/750/400?random=22', 
+                title: '满江红2', 
+                content: `<p>张艺谋执导的古装剧情片，延续第一部的悬疑探案风格，故事背景设定在南宋末年，讲述岳飞死后的一段隐秘历史。</p><p>影片延续了第一部的叙事风格，情节反转不断，演员阵容强大。</p><p>类型：古装/剧情 | 评分：8.5 | 主演：沈腾、易烊千玺</p>` 
+            },
+            movie4: { 
+                img: 'https://picsum.photos/750/400?random=23', 
+                title: '奔跑吧9', 
+                content: `<p>浙江卫视推出的户外真人秀节目，新一季加入多名新生代嘉宾，游戏环节全面升级，更注重文化体验和公益主题。</p><p>节目目前更新至第10期，全网播放量破50亿，话题度持续走高。</p><p>类型：真人秀/综艺 | 评分：7.8 | 嘉宾：李晨、杨颖、王鹤棣</p>` 
+            },
+            movie5: { 
+                img: 'https://picsum.photos/750/400?random=24', 
+                title: '三体2：黑暗森林', 
+                content: `<p>张番番执导的科幻剧，改编自刘慈欣同名小说，讲述人类面对三体文明的威胁，制定"黑暗森林"法则的故事。</p><p>该剧投资超20亿，特效还原度极高，预计2026年4月播出。</p><p>类型：科幻/剧情 | 评分：9.5 | 主演：张鲁一、于和伟</p>` 
+            },
+            movie6: { 
+                img: 'https://picsum.photos/750/400?random=25', 
+                title: '火影忍者新篇', 
+                content: `<p>《火影忍者》官方续作，讲述鸣人之子博人长大后的冒险故事，延续了原作的热血风格，同时加入新的忍术和角色。</p><p>动画目前更新至第50集，豆瓣评分8.7，深受老粉丝喜爱。</p><p>类型：动画/热血 | 评分：8.7 | 集数：连载中</p>` 
+            },
+            novel1: { 
+                img: 'https://picsum.photos/750/400?random=30', 
+                title: '剑来', 
+                content: `<p>烽火戏诸侯创作的玄幻修仙小说，主角陈平安从一个普通少年，在逆境中成长，最终成为一代剑仙。</p><p>小说目前更新至第1280章，总字数620万字，以细腻的人物刻画和宏大的世界观构建深受读者喜爱，常年占据网文排行榜前三。</p><p>作者：烽火戏诸侯 | 类型：玄幻/修仙 | 状态：连载中</p>` 
+            },
+            novel2: { 
+                img: 'https://picsum.photos/750/400?random=31', 
+                title: '诡秘之主', 
+                content: `<p>爱潜水的乌贼创作的西方玄幻小说，主角克莱恩穿越到蒸汽朋克与克苏鲁结合的世界，意外成为一名非凡者，开启了一段充满神秘与危险的旅程。</p><p>小说已完结，总字数440万字，融合了多种元素，逻辑严谨、设定新颖，被称为"西幻网文天花板"，获得多项网文大奖。</p><p>作者：爱潜水的乌贼 | 类型：西方玄幻 | 状态：已完结</p>` 
+            },
+            novel3: { 
+                img: 'https://picsum.photos/750/400?random=32', 
+                title: '凡人修仙传', 
+                content: `<p>忘语创作的仙侠修真小说，讲述主角韩立从一个普通山村少年，凭借谨慎的性格和过人的毅力，一步步修炼成仙的故事。</p><p>小说已完结，总字数780万字，情节跌宕起伏，修真体系设定完善，被改编为动画、漫画等多种形式，人气极高。</p><p>作者：忘语 | 类型：仙侠/修真 | 状态：已完结</p>` 
+            },
+            novel4: { 
+                img: 'https://picsum.photos/750/400?random=33', 
+                title: '盗墓笔记', 
+                content: `<p>南派三叔创作的悬疑冒险小说，讲述吴邪、张起灵、王胖子等人组成的"铁三角"，深入古墓探险的故事。</p><p>小说已完结，总字数200万字，融合了盗墓、悬疑、历史等元素，情节紧张刺激，衍生出多部影视剧和游戏。</p><p>作者：南派三叔 | 类型：悬疑/冒险 | 状态：已完结</p>` 
+            },
+            novel5: { 
+                img: 'https://picsum.photos/750/400?random=34', 
+                title: '都市之修仙归来', 
+                content: `<p>风会笑创作的都市修仙小说，主角陈凡从仙界归来，在都市中低调生活，却因各种意外被迫展露实力，守护亲友、闯荡都市的故事。</p><p>小说目前更新至第1860章，总字数560万字，剧情爽快，深受都市修仙爱好者喜爱。</p><p>作者：风会笑 | 类型：都市/修仙 | 状态：连载中</p>` 
+            },
+            novel6: { 
+                img: 'https://picsum.photos/750/400?random=35', 
+                title: '雪中悍刀行2', 
+                content: `<p>烽火戏诸侯创作的玄幻小说，《雪中悍刀行》续作，讲述徐凤年成为北凉王后，守护北凉、闯荡江湖的故事。</p><p>小说目前更新至第980章，总字数480万字，延续了前作的文风，人物众多、情节宏大，豆瓣评分8.6。</p><p>作者：烽火戏诸侯 | 类型：玄幻/武侠 | 状态：连载中</p>` 
+            },
+            photo1: { 
+                img: 'https://picsum.photos/750/400?random=40', 
+                title: '航母细节高清图', 
+                content: `<p>本图集包含286张航母高清细节照片，涵盖福建舰、辽宁舰、山东舰的甲板、舰岛、舰载机、雷达系统等核心部位。</p><p>所有照片均为4K画质，无水印，可下载保存，适合军事爱好者收藏和研究。</p><p>数量：286张 | 画质：4K | 分类：军事装备</p>` 
+            },
+            photo2: { 
+                img: 'https://picsum.photos/750/400?random=41', 
+                title: '明星写真集', 
+                content: `<p>本写真集包含512张影视明星高清写真，涵盖当红演员、歌手的时尚大片、片场花絮、红毯造型等内容。</p><p>照片均为超清原图，无水印，支持一键下载，可用于壁纸、头像等个人使用场景。</p><p>数量：512张 | 画质：超清 | 分类：影视明星</p>` 
+            },
+            photo3: { 
+                img: 'https://picsum.photos/750/400?random=42', 
+                title: '小说人物插画', 
+                content: `<p>本插画集包含328张网文小说人物手绘插画，涵盖《剑来》《诡秘之主》《凡人修仙传》等热门作品的主要角色。</p><p>插画风格多样，细节丰富，完美还原了小说中的人物形象，适合小说爱好者收藏。</p><p>数量：328张 | 类型：手绘插画 | 分类：小说周边</p>` 
+            },
+            photo4: { 
+                img: 'https://picsum.photos/750/400?random=43', 
+                title: '自然风光摄影', 
+                content: `<p>本摄影集包含456张全球自然风光高清照片，涵盖雪山、海洋、森林、沙漠、湖泊等多种地貌，拍摄地点遍布五大洲。</p><p>照片均为航拍全景，画质达8K，色彩鲜艳、构图精美，适合用作壁纸、设计素材或装饰画。</p><p>数量：456张 | 画质：8K | 分类：自然风光</p>` 
+            },
+            photo5: { 
+                img: 'https://picsum.photos/750/400?random=44', 
+                title: '全球城市建筑', 
+                content: `<p>本摄影集包含386张全球著名城市建筑照片，涵盖纽约、巴黎、东京、上海等城市的地标建筑，如埃菲尔铁塔、东方明珠等。</p><p>照片采用延时摄影、广角拍摄等多种手法，展现了城市建筑的独特魅力，画质超清无水印。</p><p>数量：386张 | 画质：超清 | 分类：城市建筑</p>` 
+            },
+            photo6: { 
+                img: 'https://picsum.photos/750/400?random=45', 
+                title: '军事武器特写', 
+                content: `<p>本图集包含256张军事武器特写照片，涵盖坦克、战机、导弹、枪械等多种武器装备的细节部位，如枪管、发动机、弹舱等。</p><p>照片均为近距离拍摄，细节清晰，适合军事爱好者研究武器构造，画质达4K。</p><p>数量：256张 | 画质：4K | 分类：军事武器</p>` 
+            }
+        };
+
+        // ========== 详情弹窗逻辑 ==========
+        const detailModal = document.getElementById('detailModal');
+        const closeDetail = document.getElementById('closeDetail');
+        const detailImg = document.getElementById('detailImg');
+        const detailTitle = document.getElementById('detailTitle');
+        const detailContent = document.getElementById('detailContent');
+        
+        document.querySelectorAll('.content-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const data = detailData[card.dataset.detail];
+                detailImg.src = data.img;
+                detailTitle.textContent = data.title;
+                detailContent.innerHTML = data.content;
+                detailModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        closeDetail.addEventListener('click', () => {
+            detailModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        detailModal.addEventListener('click', (e) => {
+            if (e.target === detailModal) {
+                detailModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    </script>
+</body>
+</html>
