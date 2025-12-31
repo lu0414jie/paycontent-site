@@ -3,186 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>专属内容空间</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>终身会员内容站</title>
     <style>
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .pay-popup { animation: fadeIn 0.5s ease-out; }
-        .content-area { display: none; }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; animation: fadeIn 0.3s ease-out; }
-        .tab-item.active { border-bottom: 2px solid #a855f7; color: #a855f7; }
+        body { max-width: 800px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; }
+        .section { display: none; }
+        .active { display: block; }
+        .pay-btn { padding: 12px 24px; background: #ff4400; color: #fff; text-decoration: none; border-radius: 4px; font-size: 16px; margin-top: 20px; }
+        .member-content { margin-top: 30px; padding: 20px; border: 1px solid #eee; border-radius: 4px; }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
-    <!-- 付费开通弹窗 -->
-    <div id="payPopup" class="pay-popup fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-black/90">
-        <div class="w-full max-w-md bg-gray-800 rounded-2xl p-6">
-            <h2 class="text-2xl font-bold text-center mb-4 text-purple-400">专属内容空间</h2>
-            <div class="space-y-3 mb-6">
-                <div class="flex items-center gap-2">
-                    <<<i class="fa-solid fa-bookmark text-purple-500"></</</i>
-                    <span>无限制收藏内容</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <<<i class="fa-solid fa-image text-purple-500"></</</i>
-                    <span>高清内容查看</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <<<i class="fa-solid fa-lock text-purple-500"></</</i>
-                    <span>密码保护收藏夹</span>
-                </div>
-            </div>
-            <div class="bg-purple-900/70 rounded-xl p-4 mb-6">
-                <h3 class="font-bold text-lg mb-2">终身会员</h3>
-                <p class="text-3xl font-bold">¥36</p>
-                <p class="text-xs text-gray-300">平均0.01元/天，永久解锁</p>
-            </div>
-            <!-- 需替换：你的InfinityFree域名 -->
-            <a 
-                href="https://lu0414jie.free.nf/plaintext/pay_ali.php?user_id=temp_user&vip_type=lifetime" 
-                target="_blank" 
-                class="block w-full bg-blue-600 text-center py-3 rounded-lg font-bold mb-4 flex items-center justify-center gap-2"
-            >
-                <<<i class="fa-brands fa-alipay"></</</i> 立即开通（跳转支付宝）
-            </a>
-            <p class="text-xs text-gray-400 text-center mb-4">支付完成后返回此页面，点击下方按钮验证</p>
-            <button id="verifyBtn" class="w-full bg-purple-600 text-center py-3 rounded-lg font-bold">
-                验证支付并进入
-            </button>
-        </div>
+<body>
+    <!-- 1. 支付界面（非会员显示） -->
+    <div id="pay-section" class="section">
+        <h1>终身会员开通（<span id="price">9.90</span>元）</h1>
+        <p>开通后解锁所有专属内容：军事、影视、小说等</p>
+        <p>终身有效，无后续费用</p>
+        <a href="https://lu0414jie.free.nf/alipay/pay.php" class="pay-btn">点击支付开通会员</a>
     </div>
 
-    <!-- 支付成功后的第二界面（含4个板块） -->
-    <div id="contentArea" class="content-area p-4">
-        <!-- 标签导航 -->
-        <div class="flex border-b border-gray-700 mb-4">
-            <div class="tab-item active py-2 px-4 font-medium cursor-pointer" data-tab="military">军事</div>
-            <div class="tab-item py-2 px-4 font-medium cursor-pointer" data-tab="movie">影视</div>
-            <div class="tab-item py-2 px-4 font-medium cursor-pointer" data-tab="novel">小说</div>
-            <div class="tab-item py-2 px-4 font-medium cursor-pointer" data-tab="photo">照片</div>
+    <!-- 2. 会员内容界面（会员显示） -->
+    <div id="member-section" class="section">
+        <h1>🎉 恭喜！你已开通终身会员</h1>
+        <div class="member-content">
+            <!-- 👇 替换为你的实际专属内容 -->
+            <h2>专属内容区域</h2>
+            <p>【军事内容】xxx...</p>
+            <p>【影视资源】xxx...</p>
+            <p>【小说连载】xxx...</p>
         </div>
-
-        <!-- 军事板块内容 -->
-        <div class="tab-panel active" id="military">
-            <h3 class="text-xl font-bold mb-3">军事资讯</h3>
-            <div class="grid grid-cols-1 gap-3">
-                <div class="bg-gray-800 rounded-lg p-3 flex gap-3">
-                    <img src="https://picsum.photos/100/100?random=1" alt="军事" class="w-20 h-20 rounded object-cover">
-                    <div>
-                        <h4 class="font-semibold">2025国际军事演习动态</h4>
-                        <p class="text-xs text-gray-300">多国装备同台亮相，战术协同演练</p>
-                    </div>
-                </div>
-                <div class="bg-gray-800 rounded-lg p-3 flex gap-3">
-                    <img src="https://picsum.photos/100/100?random=2" alt="装备" class="w-20 h-20 rounded object-cover">
-                    <div>
-                        <h4 class="font-semibold">新型驱逐舰技术解析</h4>
-                        <p class="text-xs text-gray-300">舰载系统升级，反潜能力提升</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 影视板块内容 -->
-        <div class="tab-panel" id="movie">
-            <h3 class="text-xl font-bold mb-3">热门影视</h3>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-gray-800 rounded-lg p-2 text-center">
-                    <img src="https://picsum.photos/150/200?random=3" alt="电影" class="w-full rounded mb-2">
-                    <h4 class="text-sm font-semibold">流浪地球3</h4>
-                    <p class="text-xs text-gray-300">科幻 / 冒险</p>
-                </div>
-                <div class="bg-gray-800 rounded-lg p-2 text-center">
-                    <img src="https://picsum.photos/150/200?random=4" alt="剧集" class="w-full rounded mb-2">
-                    <h4 class="text-sm font-semibold">狂飙2</h4>
-                    <p class="text-xs text-gray-300">剧情 / 犯罪</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 小说板块内容 -->
-        <div class="tab-panel" id="novel">
-            <h3 class="text-xl font-bold mb-3">人气小说</h3>
-            <div class="space-y-3">
-                <div class="bg-gray-800 rounded-lg p-3">
-                    <h4 class="font-semibold">《三体：新文明》</h4>
-                    <p class="text-xs text-gray-300">刘慈欣新作，宇宙文明的新博弈</p>
-                </div>
-                <div class="bg-gray-800 rounded-lg p-3">
-                    <h4 class="font-semibold">《长安十二时辰2》</h4>
-                    <p class="text-xs text-gray-300">马伯庸笔下的盛唐权谋</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 照片板块内容 -->
-        <div class="tab-panel" id="photo">
-            <h3 class="text-xl font-bold mb-3">精选照片</h3>
-            <div class="grid grid-cols-3 gap-2">
-                <img src="https://picsum.photos/120/120?random=5" alt="照片" class="w-full rounded">
-                <img src="https://picsum.photos/120/120?random=6" alt="照片" class="w-full rounded">
-                <img src="https://picsum.photos/120/120?random=7" alt="照片" class="w-full rounded">
-                <img src="https://picsum.photos/120/120?random=8" alt="照片" class="w-full rounded">
-                <img src="https://picsum.photos/120/120?random=9" alt="照片" class="w-full rounded">
-                <img src="https://picsum.photos/120/120?random=10" alt="照片" class="w-full rounded">
-            </div>
-        </div>
+        <p>收藏本页面，下次直接访问即可查看！</p>
     </div>
 
     <script>
-        const payPopup = document.getElementById('payPopup');
-        const contentArea = document.getElementById('contentArea');
-        const verifyBtn = document.getElementById('verifyBtn');
-        const payLink = document.querySelector('a');
-        const tabItems = document.querySelectorAll('.tab-item');
-        const tabPanels = document.querySelectorAll('.tab-panel');
+        // 后端会员验证接口地址（无需修改，与后端路径一致）
+        const API_URL = 'https://lu0414jie.free.nf/alipay/check_member.php';
+        const paySection = document.getElementById('pay-section');
+        const memberSection = document.getElementById('member-section');
 
-        // 生成用户唯一标识
-        let userId = localStorage.getItem('userId');
-        if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substr(2, 10);
-            localStorage.setItem('userId', userId);
-        }
-
-        // 替换支付链接中的user_id
-        window.onload = () => {
-            payLink.href = payLink.href.replace('temp_user', userId);
-        }
-
-        // 验证支付状态
-        verifyBtn.addEventListener('click', async () => {
+        // 核心：验证会员状态并切换界面
+        async function checkMember() {
             try {
-                // 需替换：你的InfinityFree域名
-                const res = await fetch(`https://lu0414jie.free.nf/plaintext/check_vip.php?user_id=${userId}`);
-                const data = await res.json();
-                if (data.success && data.isVip) {
-                    localStorage.setItem('isVip', 'true');
-                    payPopup.style.display = 'none';
-                    contentArea.style.display = 'block';
-                } else {
-                    alert('未检测到支付记录，请完成支付后重试');
-                }
-            } catch (e) {
-                alert('验证失败，请检查网络');
-            }
-        });
-
-        // 标签切换逻辑
-        tabItems.forEach(item => {
-            item.addEventListener('click', () => {
-                // 切换标签激活状态
-                tabItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                // 切换内容面板
-                const targetTab = item.dataset.tab;
-                tabPanels.forEach(panel => {
-                    panel.classList.remove('active');
-                    if (panel.id === targetTab) panel.classList.add('active');
+                const res = await fetch(API_URL, {
+                    method: 'GET',
+                    credentials: 'include' // 关键：跨域携带Cookie/Session
                 });
-            });
-        });
+                const data = await res.json();
+                data.is_member ? memberSection.classList.add('active') : paySection.classList.add('active');
+            } catch (err) {
+                paySection.classList.add('active');
+            }
+        }
+
+        window.onload = checkMember;
     </script>
 </body>
 </html>
