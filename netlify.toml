@@ -2,16 +2,7 @@
   publish = "."
   command = ""
 
-[[redirects]]
-  from = "/api/*"
-  to = "http://lu0414jie.free.nf/(:splat)"  # 已替换为你的InfinityFree真实域名
-  status = 200
-  force = true
-  headers = {
-    "Access-Control-Allow-Origin" = "*",
-    "Access-Control-Allow-Methods" = "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers" = "Content-Type"
-  }
+
 
 [[redirects]]
   from = "/*"
