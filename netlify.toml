@@ -1,19 +1,21 @@
+# 构建配置
 [build]
-  publish = "."
-  command = "" # 无构建命令，留空即可
+  publish = "." # 静态文件发布目录为根目录
+  command = ""  # 无构建命令，留空
 
+# 接口代理重定向规则
 [[redirects]]
-  from = "/api/*"
-  to = "https://lu0414jie.free.nf/orders/:splat"
+  from = "/api/*" # 匹配前端/api开头的请求
+  to = "https://lu0414jie.free.nf/orders/:splat" # 代理到后端接口
   status = 200
   force = true
-  headers = {
-    "Access-Control-Allow-Origin" = "*",
-    "Access-Control-Allow-Methods" = "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers" = "Content-Type"
-  }
+  [redirects.headers]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET,POST,OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"
 
+# 单页应用路由兜底规则
 [[redirects]]
-  from = "/*" # 匹配所有路径，实现单页应用路由兜底
-  to = "/index.html"
+  from = "/*" # 匹配所有路径
+  to = "/index.html" # 兜底到index.html
   status = 200
