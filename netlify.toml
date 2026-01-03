@@ -4,7 +4,7 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://lu0414jie.free.nf/:splat"
+  to = "https://lu0414jie.free.nf/orders/:splat"
   status = 200
   force = true
   headers = {
